@@ -55,6 +55,13 @@ var requestsForMoreComments = 0;
 var total = 0;
 var millisecondsToRetryLoadingComments = 1;
 var millisecondsToRetryBuildingReplies = 20;
+console.info('Changing comments from Hot to Fresh and hiding unnecessary things...');
+document.getElementsByClassName('active')[0].nextElementSibling.children[0].click();
+document.getElementById('sidebar').style.display = 'none';
+document.getElementById('individual-post').style.display = 'none';
+document.getElementsByClassName('badge-sticky-subnav-static')[0].style.display = 'none';
+document.getElementsByTagName('footer')[0].style.display = 'none';
+document.getElementById('jsid-sticky-button').style.display = 'none';
 console.info('Loading all comments...');
 if(typeof interval !== 'undefined'){
 	clearInterval(interval);
@@ -68,11 +75,6 @@ function buildNextReply(){
 		replyButton = document.activeElement.parentElement.parentElement.parentElement.parentElement.parentElement.previousSibling.getElementsByClassName('badge-reply-trigger');
 		replyButton = replyButton[replyButton.length-1];
 		if(hideEverythingElse){
-			document.getElementById('sidebar').style.display = 'none';
-			document.getElementById('individual-post').style.display = 'none';
-			document.getElementsByClassName('badge-sticky-subnav-static')[0].style.display = 'none';
-			document.getElementsByTagName('footer')[0].style.display = 'none';
-			document.getElementById('jsid-sticky-button').style.display = 'none';
 			var comments = document.getElementsByClassName('comment-entry badge-comment');
 			for(var commentIndex in comments){
 				if(comments[commentIndex] != replyButton.parentElement.parentElement.parentElement.parentElement){
