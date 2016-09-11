@@ -3,14 +3,17 @@
 * Steps to execute this code:
 * 0. Make sure you read all the instructions before executing the code
 * 1. Load the post you want to tag people on
-* 2. Open the browser's Developer Tools (Chrome, Opera, Firefox, Vivaldi: F12) or equivalent
-* 3. Copy and paste all this code into the console and hit ENTER (Ctrl+A selects it all)
-* 4. Hit any reply button or focus any text area
-* 5. The code will select three random people from the NAMES list, excluding people that already
+* 2. Open the browser's "Developer Tools" (Chrome, Opera, Firefox, Vivaldi: F12) or equivalent
+* 3. Go to the "Console" tab
+* 4. Make sure "top" is selected on the drop-down list above the console (in case your browser has
+*    such list)
+* 5. Copy and paste all this code into the console and hit ENTER (Ctrl+A selects it all)
+* 6. Hit any reply button or focus any text area
+* 7. The code will select three random people from the NAMES list, excluding people that already
 *    commented on the post, were tagged or were inside the NAMES_OPTED_OUT list, and generate the
 *    reply to tag them, like this:
 *    @RANDOM_NAME1 @RANDOM_NAME2 @RANDOM_NAME3 CURRENT/TOTAL AFTER_TAG_TEXT
-* 6. After each time you hit the Post button, the code will generate the next comment and put
+* 8. After each time you hit the Post button, the code will generate the next comment and put
 *    it right below the one you just posted, so you only have to keep pressing the Post button until
 *    you tag everybody (or run out of comments)
 */
@@ -56,7 +59,7 @@ var total = 0;
 var millisecondsToRetryLoadingComments = 1;
 var millisecondsToRetryBuildingReplies = 20;
 console.info('Changing comments from Hot to Fresh and hiding unnecessary things...');
-document.getElementsByClassName('active')[0].nextElementSibling.children[0].click();
+document.querySelector('.active:not(.badge-item-vote-up)').nextElementSibling.children[0].click();
 document.getElementById('sidebar').style.display = 'none';
 document.getElementById('individual-post').style.display = 'none';
 document.getElementsByClassName('badge-sticky-subnav-static')[0].style.display = 'none';
@@ -76,7 +79,7 @@ function buildNextReply(){
 		replyButton = replyButton[replyButton.length-1];
 		if(hideEverythingElse){
 			var comments = document.getElementsByClassName('comment-entry badge-comment');
-			for(var commentIndex in comments){
+			for(var commentIndex=0; commentIndex<comments.length; commentIndex++){
 				if(comments[commentIndex] != replyButton.parentElement.parentElement.parentElement.parentElement){
 					comments[commentIndex].style.display = 'none';
 				}
@@ -102,11 +105,14 @@ function buildNextReply(){
 			}
 		}else{
 			var missingNames = listArray.concat(lastComment.split(/[0-9]/)[0].trim().split('@')).sort().join(' ').replace(/ +/g,' ');
-			errorElements[0].innerHTML += ' - Maybe you want to <a href="http://9gag.com/logout" target="_blank">log out</a>, <a href="http://9gag.com/login" target="_blank">log in</a> with a different account and then <a href="'+document.location.href.split('?')[0].split('#')[0]+'">reload this post</a> and re do the code steps to continue tagging<br/><hr/>Names missing:<br/><input onclick="select()" value="'+missingNames+'"/>';
+			var message = errorElements[0].innerHTML+' - Maybe you want to <a href="http://9gag.com/logout" target="_blank">log out</a>, <a href="http://9gag.com/login" target="_blank">log in</a> with a different account and then <a href="'+document.location.href.split('?')[0].split('#')[0]+'">reload this post</a> and re do the code steps to continue tagging<br/><hr/>Names missing:<br/><input onclick="select()" value="'+missingNames+'"/>';
 			if(localStorageManager('save',localStorageMissingNamesKey,missingNames)){
-				errorElements[0].innerHTML += '<hr/>Missing names were saved in LocalStorage, just in case';
+				message += '<hr/>Missing names were saved in LocalStorage, just in case';
 			}else{
-				errorElements[0].innerHTML += '<hr/>Copy the names missing before leaving this page!';
+				message += '<hr/>Copy the names missing before leaving this page!';
+			}
+			for(var errorElementIndex=0; errorElementIndex<errorElements.length; errorElementIndex++){
+				errorElements[errorElementIndex].innerHTML = message;
 			}
 		}
 		document.activeElement.value = lastComment;
@@ -160,14 +166,14 @@ function loadAllComments(){
 			clearInterval(interval);
 			var namesAlreadyHere = '';
 			var commentators = document.getElementsByClassName('username badge-author-name badge-normal');
-			for(var commentatorIndex in commentators){
+			for(var commentatorIndex=0; commentatorIndex<commentators.length; commentatorIndex++){
 				var userName = commentators[commentatorIndex].innerText;
 				if(userName){
 					namesAlreadyHere += ' '+userName;
 				}
 			}
 			var comments = document.getElementsByClassName('content badge-content');
-			for(var commentIndex in comments){
+			for(var commentIndex=0; commentIndex<comments.length; commentIndex++){
 				var text = comments[commentIndex].innerText;
 				if(text){
 					var matches = comments[commentIndex].innerText.trim().match(/@[^ ]+/g);
@@ -176,25 +182,25 @@ function loadAllComments(){
 					}
 				}
 			}
-			names = names.replace(/@/g,' ').replace(/ +/g,' ').trim().split(' ');
-			namesOptedOut = namesOptedOut.replace(/@/g,' ').replace(/ +/g,' ').trim().split(' ');
+			names = names.trim().replace(/@/g,' ').split(/ +/);
+			namesOptedOut = namesOptedOut.trim().replace(/@/g,' ').split(/ +/);
 			var listOptedOut = {};
-			for(var namesOptedOutIndex in namesOptedOut){
+			for(var namesOptedOutIndex=0; namesOptedOutIndex<namesOptedOut.length; namesOptedOutIndex++){
 				listOptedOut[namesOptedOut[namesOptedOutIndex]] = true;
 			}
-			for(var nameIndex in names){
+			for(var nameIndex=0; nameIndex<names.length; nameIndex++){
 				if(listOptedOut[names[nameIndex]]){
 					console.info(names[nameIndex]+' opted out, but is still on main list');
 					names.splice(nameIndex,1);
 				}
 			}
-			namesAlreadyHere = namesAlreadyHere.replace(/@/g,' ').replace(/ +/g,' ').trim().split(' ');
+			namesAlreadyHere = namesAlreadyHere.trim().replace(/@/g,' ').split(/ +/);
 			var listAlreadyHere = {};
-			for(var namesAlreadyHereIndex in namesAlreadyHere){
+			for(var namesAlreadyHereIndex=0; namesAlreadyHereIndex<namesAlreadyHere.length; namesAlreadyHereIndex++){
 				listAlreadyHere[namesAlreadyHere[namesAlreadyHereIndex]] = true;
 			}
-			var localStorageMissing = localStorageManager('get',localStorageMissingNamesKey).split(' ');
-			for(var nameIndex in names){
+			var localStorageMissing = localStorageManager('get',localStorageMissingNamesKey).trim().split(/ +/);
+			for(var nameIndex=0; nameIndex<names.length; nameIndex++){
 				if(listAlreadyHere[names[nameIndex]] || (localStorageMissing[0]&&localStorageMissing.indexOf(names[nameIndex])==-1)){
 					current++;
 				}else{
@@ -220,7 +226,7 @@ function loadAllComments(){
 				console.info('Username list ready. Hit the reply button of a comment or click on a text area to start tagging...');
 				if(afterTagTexts.length){
 					console.info('After Tag Texts available:\n\tIndex\tText');
-					for(var afterTagTextIndex in afterTagTexts){
+					for(var afterTagTextIndex=0; afterTagTextIndex<afterTagTexts.length; afterTagTextIndex++){
 						console.info('\t'+afterTagTextIndex+'\t'+afterTagTexts[afterTagTextIndex]);
 					}
 					console.info('You can set any of those by executing:\nsetAfterTagText(X) //Where X stands for the index you want to use');
